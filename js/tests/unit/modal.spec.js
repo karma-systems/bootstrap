@@ -90,8 +90,8 @@ describe('Modal', () => {
       const modalEl = fixtureEl.querySelector('.modal')
       const modal = new Modal(modalEl)
 
-      modalEl.addEventListener('show.bs.modal', e => {
-        expect(e).toBeDefined()
+      modalEl.addEventListener('show.bs.modal', event => {
+        expect(event).toBeDefined()
       })
 
       modalEl.addEventListener('shown.bs.modal', () => {
@@ -114,8 +114,8 @@ describe('Modal', () => {
         backdrop: false
       })
 
-      modalEl.addEventListener('show.bs.modal', e => {
-        expect(e).toBeDefined()
+      modalEl.addEventListener('show.bs.modal', event => {
+        expect(event).toBeDefined()
       })
 
       modalEl.addEventListener('shown.bs.modal', () => {
@@ -184,8 +184,8 @@ describe('Modal', () => {
       const modalEl = fixtureEl.querySelector('.modal')
       const modal = new Modal(modalEl)
 
-      modalEl.addEventListener('show.bs.modal', e => {
-        e.preventDefault()
+      modalEl.addEventListener('show.bs.modal', event => {
+        event.preventDefault()
 
         const expectedDone = () => {
           expect().nothing()
@@ -209,9 +209,9 @@ describe('Modal', () => {
       const modal = new Modal(modalEl)
 
       let prevented = false
-      modalEl.addEventListener('show.bs.modal', e => {
+      modalEl.addEventListener('show.bs.modal', event => {
         if (!prevented) {
-          e.preventDefault()
+          event.preventDefault()
           prevented = true
 
           setTimeout(() => {
@@ -616,8 +616,8 @@ describe('Modal', () => {
         modal.hide()
       })
 
-      modalEl.addEventListener('hide.bs.modal', e => {
-        expect(e).toBeDefined()
+      modalEl.addEventListener('hide.bs.modal', event => {
+        expect(event).toBeDefined()
       })
 
       modalEl.addEventListener('hidden.bs.modal', () => {
@@ -694,8 +694,8 @@ describe('Modal', () => {
         }, 10)
       }
 
-      modalEl.addEventListener('hide.bs.modal', e => {
-        e.preventDefault()
+      modalEl.addEventListener('hide.bs.modal', event => {
+        event.preventDefault()
         hideCallback()
       })
 
@@ -971,12 +971,35 @@ describe('Modal', () => {
         }, 10)
       }
 
-      modalEl.addEventListener('show.bs.modal', e => {
-        e.preventDefault()
+      modalEl.addEventListener('show.bs.modal', event => {
+        event.preventDefault()
         showListener()
       })
 
       trigger.click()
+    })
+
+    it('should call hide first, if another modal is open', done => {
+      fixtureEl.innerHTML = [
+        '<button data-bs-toggle="modal"  data-bs-target="#modal2"></button>',
+        '<div id="modal1" class="modal fade"><div class="modal-dialog"></div></div>',
+        '<div id="modal2" class="modal"><div class="modal-dialog"></div></div>'
+      ].join('')
+
+      const trigger2 = fixtureEl.querySelector('button')
+      const modalEl1 = document.querySelector('#modal1')
+      const modalEl2 = document.querySelector('#modal2')
+      const modal1 = new Modal(modalEl1)
+
+      modalEl1.addEventListener('shown.bs.modal', () => {
+        trigger2.click()
+      })
+      modalEl1.addEventListener('hidden.bs.modal', () => {
+        expect(Modal.getInstance(modalEl2)).not.toBeNull()
+        expect(modalEl2.classList.contains('show')).toBeTrue()
+        done()
+      })
+      modal1.show()
     })
   })
 
